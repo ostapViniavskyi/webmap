@@ -2,7 +2,6 @@
 # were filmed, population of countries and lakes of North America
 import pandas as pd
 import folium
-import geopy
 from math import nan
 
 
@@ -48,16 +47,21 @@ def read_locations(path):
 
 def find_coordinates(locations, df):
     """
-    dict(str: tuple), pd.DataFrame -> pd.DataFrame
+    dict(str: tuple), pd.DataFrame -> pd.DataFrame, int
     Return dataframe where location column is replaced by corresponding
-    coordinates columns
+    coordinates columns and number of locations
     """
     df['latitude'] = df.apply(lambda x:
-                              locations.get(x.location,(nan, nan))[0], axis=1)
+                              locations.get(x.location, (nan, nan))[0],
+                              axis=1)
     df['longitude'] = df.apply(lambda x:
-                               locations.get(x.location,(nan, nan))[1], axis=1)
+                               locations.get(x.location, (nan, nan))[1],
+                               axis=1)
+    # drop missing values
+    df.dropna(how='any', inplace=True)
+    loc_num = len(df.groupby(['longitude', 'latitude']))
     del df['location']
-    return df
+    return df, loc_num
 
 
 def create_map(df, markers_num=100):
@@ -67,7 +71,7 @@ def create_map(df, markers_num=100):
     lakes in North America. markers_num parameter shows how many markers will
     be displayed on the map, if that number is available.
     """
-    map = folium.Map()
+    webmap = folium.Map()
 
     # add films markers to the map
     fg1 = folium.FeatureGroup(name='Films')
@@ -79,14 +83,17 @@ def create_map(df, markers_num=100):
     df = df.sample(frac=1).reset_index(drop=True)
     for index, x in df.iterrows():
         if index < markers_num:
-            i_frame = folium.IFrame(html=x['name'], width=700, height=200)
+            # set width and height for the IFrame
+            height = min(20 * len(x['name'].split('<li>')), 200)
+            width = 500
+            i_frame = folium.IFrame(html=x['name'], width=width, height=height)
             name = folium.Popup(i_frame, parse_html=True)
             fg1.add_child(folium.Marker(location=[x['latitude'],
                                                   x['longitude']],
                                         popup=name, icon=folium.Icon()))
         else:
             break
-    map.add_child(fg1)
+    webmap.add_child(fg1)
 
     # add population data to the map
     pop = folium.FeatureGroup(name='Population')
@@ -96,39 +103,48 @@ def create_map(df, markers_num=100):
            if x['properties']['POP2005'] < 10000000
            else 'orange' if 10000000 <= x['properties']['POP2005'] < 50000000
            else 'red'}))
-    map.add_child(pop)
+    webmap.add_child(pop)
 
     # add lakes of North America on the map
     lakes = folium.FeatureGroup(name='Lakes NA')
     lakes.add_child(folium.GeoJson(data=open('lakes_na.geojson', 'r',
                                              encoding='utf-8-sig').read()))
-    map.add_child(lakes)
+    webmap.add_child(lakes)
 
-    map.add_child(folium.LayerControl())
-    map.save('films_map.html')
+    webmap.add_child(folium.LayerControl())
+    webmap.save('films_map.html')
     print('Map is ready to use!!!')
 
 
 def main():
-    try:
-        year = int(input('Year: '))
-        marker_num = int(input('Markers number: '))
-        if year < 0 or marker_num < 0:
-            raise ValueError('Year and markers number must be \
-                             positive integers')
-        # read films from particular year into films dataframe
-        films = read_films_by_year('locations.list', year)
-        # read coordinates of locations form tsv file
-        locations = read_locations('locations.tsv')
-        # update films dataframe with coordinates of locations
-        films = find_coordinates(locations, films)
-        # drop missing values
-        films.dropna(how='any', inplace=True)
+    while True:
+        try:
+            year = int(input('Year: '))
+            if year < 0:
+                raise ValueError('Year must be a positive integer! Try again')
+            # read films from particular year into films dataframe
+            films = read_films_by_year('locations.list', year)
+            # read coordinates of locations form tsv file
+            locations = read_locations('locations.tsv')
+            # update films dataframe with coordinates of locations
+            films, loc_num = find_coordinates(locations, films)
+            print(f'{loc_num} locations were(was) found')
+            break
+        except ValueError as err_message:
+            print(err_message)
+            continue
 
-        create_map(films, marker_num)
+    while True:
+        try:
+            marker_num = int(input('Markers number: '))
+            if marker_num < 0:
+                raise ValueError('Markers number must be a positive integer!')
+            break
+        except ValueError as err_message:
+            print(err_message)
+            continue
 
-    except ValueError as err_message:
-        print(err_message)
+    create_map(films, marker_num)
 
 
 main()
