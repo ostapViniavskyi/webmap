@@ -1,5 +1,4 @@
-# webmap
-HTML map of locations, where films were filmed
+# webmap  
 Module that generates map with 3 layers:
   - based on year finds and marks on map given number of locations, where films in that year were filmed.
     If more then one film was filmed on some location, all films filmed there will be listed.
@@ -7,11 +6,12 @@ Module that generates map with 3 layers:
     number of markers for that year, all markers will be displayed.  
     Films filmed in particular year are loaded from <b>location.list</b> file.  
     All unique locations along with their coordinates are loaded from <b>locations.tsv</b> file. All coordinates
-    from <b>locations.tsv</b> are got using <i>geopy</i> module.
+    from <b>locations.tsv</b> are got using <i>geopy</i> module and <b>ArcGIS</b> geocoder.
     
   ![alt text](https://github.com/ostapViniavskyi/webmap/blob/master/examples/map_films_layer.png)
   
-  - second layer colores contries on the map in 3 different colors(green, yellow and red) based on the data from <b>world.json</b> file.
+  - second layer colores contries on the map in 3 different colors(green, yellow and red) based on the population of countries
+  in 2005 year. Data is got from <b>world.json</b> file.
   
   ![alt text](https://github.com/ostapViniavskyi/webmap/blob/master/examples/map_population_layer.png)
   
