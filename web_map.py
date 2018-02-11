@@ -1,8 +1,8 @@
 # This module generates html map that has three layers: locations, where films
 # were filmed, population of countries and lakes of North America
+from math import nan
 import pandas as pd
 import folium
-from math import nan
 
 
 def read_films_by_year(path, year):
@@ -117,6 +117,10 @@ def create_map(df, markers_num=100):
 
 
 def main():
+    """
+    None -> None
+    Handle input and output of the program
+    """
     while True:
         try:
             year = int(input('Year: '))
