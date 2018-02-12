@@ -85,7 +85,7 @@ def create_map(df, markers_num=100):
         if index < markers_num:
             # set width and height for the IFrame
             height = min(20 * len(x['name'].split('<li>')), 200)
-            width = 500
+            width = 300
             i_frame = folium.IFrame(html=x['name'], width=width, height=height)
             name = folium.Popup(i_frame, parse_html=True)
             fg1.add_child(folium.Marker(location=[x['latitude'],
