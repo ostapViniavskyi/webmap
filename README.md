@@ -20,4 +20,4 @@ Module that generates map with 3 layers:
   ![alt text](https://github.com/ostapViniavskyi/webmap/blob/master/examples/map_na_lakes_layer.png)
   
 User can control which layers to display.  
-In <b>films_map.html</b> is example for 1895 years with 8 unique locaiton.
+In <b>films_map.html</b> is example for 2010 years with 100 unique locaiton shown.
